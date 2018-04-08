@@ -8,3 +8,5 @@ git
 .cache
 .eslintcache
 */.DS_Store
+
+webpack/*/dist/main.js
