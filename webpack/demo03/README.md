@@ -63,7 +63,7 @@ emo02中相同配置项不再赘述
 
           // loader的配置项，babel-loader推荐写在.babelrc文件中
           options: {
-            presets: ['es2015]
+            presets: ['es2015']
           }
         },
         {
@@ -72,6 +72,20 @@ emo02中相同配置项不再赘述
           use: ['style-loader', 'css-loader', 'less-loader']
         }
       ]
+    },
+
+    // 测试服务
+    devServer: {
+      contentBase: path.join(__dirname, 'dist'),   // 静态文件地址
+      compress: true,                              // 是否压缩,
+      historyApiFallback: true,                    // 404则返回index.html
+      hot: true,                                   // 热加载.依赖于HMR插件
+      noInfo: true,                                // 只有热加载错误或者警告
+      https: false,                                // true表示自签名
+      port: 8888,                                  // 端口号
+      proxy: {                                     // 代理url
+        '/api': 'http://localhost:3000'
+      }
     }
   }
 ```
