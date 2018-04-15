@@ -1,0 +1,67 @@
+<html>
+<head>
+    <title>Getting Started</title>
+    <!--<script src="https://unpkg.com/lodash@4.16.6"></script>-->
+    <!--无法立即体现，脚本的执行依赖于外部扩展库(external library)。-->
+    <!--如果依赖不存在，或者引入顺序错误，应用程序将无法正常运行。-->
+    <!--如果依赖被引入但是并没有使用，浏览器将被迫下载无用代码。-->
+</head>
+<body>
+2
+<!--不推荐全局安装-->
+<!--不推荐全局安装 webpack。这会将你项目中的 webpack 锁定到指定版本
+，并且在使用不同的 webpack 版本的项目中，可能会导致构建失败。-->
+<!--npm install webpack@版本号-->
+
+
+3
+<!--运行webpack-->
+<!--通常，webpack 通过运行一个或多个 npm scripts ，-->
+<!--会在本地 node_modules 目录中查找安装的 webpack：-->
+
+
+怎么运行webpack?
+1.
+采用弄的的方式运行;
+第一种方式默认会找到webpack.config.js
+"scripts": {
+"start": "webpack"
+}或者
+"scripts": {
+"start": "webpack --config webpack.config.js"
+}
+npm run start
+npm  start
+注意package.json必须完全采用json的写法,否则就会报错
+
+推荐使用这中方式进行配置
+配置文件具有更多的灵活性。
+我们可以通过配置方式指定 loader
+规则(loader rules)、插件(plugins)、解析选项(resolve options)，
+以及许多其他增强功能
+
+
+
+2.
+.\node_modules\.bin\webpack 注意斜线的方向,要不然执行不了
+
+.\node_modules\.bin\webpack src/index.js dist/bundle.js
+
+
+4.观看打包后模块标识符
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {  其实这就是minifast 记录 id
+
+__webpack_require__(4)(module)  其实这就是runtime  记录模块加载逻辑的
+
+这两个webpack处理模块的核心,必不可少的
+
+5 .
+支持所有的引入方式 webpack天生支持
+1.common.js
+2,amd cmd  umd
+3,esmodule es6 import
+看例子
+</body>
+</html>

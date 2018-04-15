@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+这里面是有坑的,配置不好的话,
+图片连接失败,但是发现打包后图片路径不正确,
+可能就是这里配置出问题了
+
+首先css引入处理  @import url()  src='./'
+css-loader 解释(interpret) @import 和 url() ，
+会 import/require() 后再解析(resolve)它们。
+引用资源的合适 loader 是 file-loader和 url-loader,配置项自己官网查询;
+html引入处理html-loader
+默认情况下，每个本地的 <img src="image.png">
+都需要通过 require （require('./image.png')）来进行加载。其实就相当于import
+
+
+
+然后打包图片并且返回路径
+url-loader 像 file loader 一样工作，
+但如果文件小于限制，可以返回 data URL
+limit单位是b
+file-loader 将文件发送到输出文件夹，并返回（相对）URL
+只有这两个loader不行,
+
+
+html需要引入打包后的文件,我不想手动输入那我怎么版 ?
+html-webpack-plugin这个插件
+插件的叫法都一样 webpack-plugin
+正好学习插件的方法  plugins:[new HtmlWebpackPlugin()]
+
+
+讲解一下publicPath ? 干啥用的,引入打包后的路径时候
+当设置publicPath:'/'
+webpack做了什么呢?
+__webpack_require__.p = "/";
+把每个打包后的模块bundle加上了(引用路径)__webpack_require__.p,
+注意是拼接,一定要在publicPath后面加上"/"(千万注意)
+否则报错也看不出来的,
+
+
+
+代码分离
+js分离
+    js打包到js文件夹
+    怎么办? filename:"js/[name].[hash].js"
+css文件分离
+    配合插件extract-text-webpack-plugin
+    const ExtractTextWebpack = require("extract-text-webpack-plugin");
+    new ExtractTextWebpack({
+        filename:"css/[name].[hash].css"
+    }),
+    {
+        test:/\.css$/,
+        use:ExtractTextWebpack.extract({
+        fallback:"style-loader",
+        use:'css-loader'
+        })
+    }
+图片字体分离
+
+
+
+</body>
+</html>
