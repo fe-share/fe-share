@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    题外话:为什么不通过/node_module/bin/webpack-dev-server
+    script{
+        "dev":"webpack-dev-server"
+    }这是跟node的查找规则的原因
+
+    我们在开发项目的时候,每次更改代码都要刷新浏览器,并且模拟真是的线上环境
+
+    第一种方式就是命令行
+        webpack --watch --color --progress
+        --watch监听文件的变化进行打包
+        --colot 命令行颜色
+        --progress进度
+
+    这种方式是没有服务器的
+
+
+
+
+第二种方式就是webpack-dev-server
+
+    首先他会帮我们搭建一个服务,协助我们开发?
+    那怎么使用呢?
+    首先版本问题,直接下载npm i webpack-dev-server不行,注意现在webpack已经到4了(我们前端最需要的严谨就是版本号)
+    你下载的是和webpack4配套的webpack-dev-server,而我们需要的是我们自己
+    webpack3的"webpack-dev-server": "^2.11.1"这个就可以(cnpm i webpack-dev-server --save-dev)
+    然后就是配置,
+
+        dev-server作用?
+        1.live reloading 重新刷新浏览器不需要手动刷新,不能打包文件的,打包的文件存在于内存中,不是项目中产生打包后的文件
+            其实就是开启了一个服务器
+        2.路径的重定向
+        3,https支持的
+        3.浏览器显示编译的错误
+        4,接口代理(跨域)
+        5.模块热更新
+        https
+        inline frame 还是inline,就会在网页头部加上一行编译的状态信息,如果不想让页面变化,inline:true
+        lazy启动webpack-dev-server的时候不打包编译,只有访问的资源才进行打包编译,多页面应用非常有用,只访问一个页面,
+        那么只打包一个页面,比打包20个页面快的多
+        overlay遮罩 错误的提示,如果命令行有错误就在遮罩显示
+        historyApiFallback提供h5 history api,单页面应用要使用路由,当路由使用的hash # 其实请求的还是那个页面,重定向到index.html
+        我们启动http://localhost:9000的时候 ,设置为true时候http://localhost:9000/zhangsan不会报404
+
+        proxy代理
+            参数
+            target
+            changeOrigin 重要默认是false
+            headers 增加http请求的请求头
+            logLevel 终端显示代理的信息
+            pathRewrite 帮助重定向,代理, (在控制台network里面并没有更改)
+
+
+
+
+
+
+        devserver api
+    devserver:{
+            contentBase: path.join(__dirname, "/dist"),//启动服务目录,默认跟目录为服务器目录
+            compress: true,//gzip压缩
+            port: 9000,//端口号默认8080
+            historyApiFallback: true,//使用html5的history api的时候,
+            historyApiFallback: 这个是干嘛用的嘞？对于单页面程序，
+            浏览器的brower histroy可以设置成html5 history api或者hash，而设置为html5 api的，
+            如果刷新浏览器会出现404 not found，原因是它通过这个路径（比如： /activities/2/ques/2）来访问后台，所以会出现404，
+            而把historyApiFallback设置为true那么所有的(找不到的路径)路径都执行转到index.html,找到的正常找
+
+            open: true,//每次编译打开浏览器默认false
+            overlay: {
+                warnings: true,
+                errors: true
+            },//编译提示错误和警告
+            proxy: {  代理
+                "/api": {
+                target: "http://localhost:3000",
+                pathRewrite: {"^/api" : ""}
+                }
+            },//开发环境代理   (在控制台network里面并没有更改)
+            progress:true,//编译进度
+            publicPath: "/assets/",//路径 确保 publicPath 总是以斜杠(/)开头和结尾。
+            watchOptions:{
+                poll: true
+            },//webpack-dev-server 和 webpack-dev-middleware 里 Watch 模式默认开启。所以可以设置watchOptions:{}
+            hot:true,//启用 webpack 的模块热替换特性：(模块热更新就是在某个需要的时间内,把需要的更新的模块替换掉,其实hot相当于开启了钩子,钩子触发的时候
+            我们就能实现替换操作,代码支持hot必须还需要写针对他的代码,市场上的loader支持热更新的,vue-loader  css-loader react-hot-loader
+    )
+            inline:true//应用程序启用内联模式(inline mode)。这意味着一段处理实时重载的脚本被插入到你的包(bundle)中，
+            并且构建消息将会出现在浏览器控制台。
+    }
+    注意关键
+    contentBase: path.join(__dirname, "/dist") 也可以使用 __dirname+'/dist'
+    加上 host: "0.0.0.0",//服务器外部可访问,(wifi 就不行 我也不知道为什么啊,)
+
+    1.hot:true, 千万注意 一定要在 plugins:[new webpack.HotModuleReplacementPlugin()],
+    2.也可以不用hot:true 也不需要plugins:[new webpack.HotModuleReplacementPlugin()],那么就是属性模式
+    3.webpack-dev-server不能使用[chunkhash]
+    4.修改配置文件必须重新进行运行,否则无效
+
+    重点:
+            情况一:
+            我们不设置hot:true;不使用new webpack.HotModuleReplacementPlugin()
+            当我们修改代码,就会刷新浏览器,其实这样开发也挺方便(但不是热替换)
+            情况二:
+            我们设置hot:true  new webpack.HotModuleReplacementPlugin()
+            这时候我们修改css发现确实好了,不会刷新浏览器了,热更新实现了?
+            别改性的太早,当我们修改index中代码,发现浏览器还会刷新,那就不是热更新,
+
+        热更新,也就是热替换,有什么好处?提高效率,保存开发数据的状态,
+    优点
+                1.保持数据的状态(比如table切换,切到第三个了,你刷新下网页重新开始了,)
+                2.节省调试时间
+                3.样式调试更快
+
+        那么我们如何设置呢?
+            1.devServer.hot设置为true
+            2.还需要new webpack.HotModuleReplacementPlugin()插件
+            3. webpack.NamedModulesPlugin清晰的看到模块的相对路径
+            4.其实通过webpack热更新的时候,我们还需要写代码的
+            通过module.hot接口
+            module.hot.accept接受两个参数 第一个 依赖  第二个 依赖更新以后执行的回调
+            自己写热更新还需要写代码的
+
+            其实loader都帮我们做了这些了,所以刚刚实现了热更新了
+            css-loader vue-loader react-hot-module
+            如果写的原生的代码,是需要写热替换的代码的,要不会出现修改dom重复的现象,
+            尤其是appendChild,修改一下,会新增一个
+
+            我们要原生js的时候,我们需要写module.hot.accept,一个一个配置比较麻烦,
+            但是比较流框架都给我们做好了啊,我们只需要用就行了
+
+
+            我们还要配置我们的代码的调试,?
+            为什么?
+                我们写的代码被打包编译了,es6啊还有模块啊,vue的单文件组件,包括react,代码到浏览器都被编译了,
+            那么我们出了错误,报错的位置我们自己都不认识?那就需要把错误的提示定位要我们自己写代码的文件模块
+            以及位置,(也就是我们需要知道错误在那个文件,第几行,第几列)?
+
+            我们需要使用 sourceMap解决调试问题
+                css中和js中都存在sourceMap建立映射
+                jsSourceMap
+                开始方式
+                    1.设置devtool: 7种类 每一种都都有自己的使用场景
+                    2.插件的形式 webpack.SourceMapDevToolPlugin
+                                webpack.EvalSourceMapDevToolPlugin
+                                使用插件更加灵活一点的
+
+
+                Development环境中devtool
+                        eval 比较快一些
+                        eval-source-map
+                        cheap-eval-source-map 仅仅是显示行号
+                        cheap-module-eval-source-map 行号
+                Production 追查线上的bug
+                        source-map 和自己写的代码基本一致了(注意丑化打开sourcemap)
+                        hidden-source-map
+                        nosource-source-map
+
+                只需要知道线上用那种
+
+                css要开启css-loader
+                css-loader.option.sourcemap
+                less-loader.option.sourcemap
+                sass-loader.option.sourcemap,
+
+                new webpack.optimize.UglifyJsPlugin()
+                使用js的时候,代码丑化的时候记得把sourcemap打开
+
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>入口和出口的配置</title>
+</head>
+<body>
+
+    入口 就是递归查找依赖的起点,和dom的跟节点一样
+    webpack配置
+        三种写法
+            entry:'./src/index.js'
+            entry:['./src/index.js','./src/index1.js'],
+            entry:{heihei:'./src/index.js',haha:'./src/index1.js'} (我练习时候出现错误,把第三种entry:[],
+            导致报错,说和webpack配置的api不匹配,那以后遇到这样的错误就知道,是自己写的配置不对应
+            nvalid configuration object. Webpack has been initialised using a configuration object
+            that does not match the API schema.
+    )
+            推荐使用第三种写法更加清晰
+    出口:
+        output:{
+            path:path.resolve(__dirname,'dist'),输出打包后文件的目录
+            filename:'bundle.js',输出文件名[name][hash][chunkhash]
+            publicPath:'/'引用打包后的文件的路径  url('ijpg') => url('/ijpg')
+        }
+    占位符 [name]对应入口文件的第三种写法的key
+
+
+    [hash]webpack打包的hash值(代表那次打包)输出的文件hash相同
+    理解:
+    hash是跟整个项目的构建相关，只要项目里有文件更改，(整个项目的指纹)
+    整个项目构建的hash值都会更改，并且全部文件都共用相同的hash值,(我实验过了,不修改项目hash值不会变的)
+    注意空格之类的其实也会导致重新打包的,(也算是项目的修改)
+
+
+    [hash:8]代表这hash只取前8个
+    如下:
+    Hash: 498de41b7526471aeb38
+    Version: webpack 3.11.0
+    Time: 67ms
+    Asset     Size  Chunks             Chunk Names
+    haha.498de41b7526471aeb38.bundle.js   2.5 kB       0  [emitted]  haha
+    hehe.498de41b7526471aeb38.bundle.js  2.49 kB       1  [emitted]  hehe
+    [0] ./src/index.js 15 bytes {1} [built]
+    [1] ./src/index1.js 13 bytes {0} [built]
+
+    [chunkhash]对应包的hash,每个包hash唯一,(某个包的指纹)
+    这样的话就能合理利用缓存,不修改的话,chunkhash不变,
+    但是注意的是,当你引入新的模块=>导致重新的打包=>每个模块打包对应的表示id变化,重新分配id=>其实会引起重新打包的
+    我实验过了,这个东西只要不改变,打包的号就不改变,所以可以利用长效缓存
+    1,我删除了webpack版本又下载一下,不改动文件打包号不变
+    2.删除了index.js,又重新恢复了,打包的chunkhash不变,但是不能多空格
+    3,其实第三方库是固定的,完全可以使用长效缓存(长效缓存考虑好多问题)
+    4,多空格肯定是不行的,肯定会重新打包,但是第三方库我们只会下不会去编辑,所以不存在重新打包的可能
+
+
+    入口1个   出口 bundle.js  正常
+    入口 2个  出口 bundle.js  报错
+    入口 2给  出口 [name].js正常
+
+
+    插件的原理,插件的构造函数会有一个apply方法,Function.prototype.apply=function(compiler){}
+    这样就能让插件传递了
+    compiler对象代表的是配置完备的Webpack环境。 compiler对象只在Webpack启动时构建一次，
+    由Webpack组合所有的配置项构建生成。
+
+    简单的讲，compiler对象代表的是不变的webpack环境，是针对webpack的；
+    而compilation对象针对的是随时可变的项目文件，只要文件有改动，compilation就会被重新创建
+
+    采用[hash]这样带来的问题是，三个js文件任何一个改动都会影响另外两个文件的最终文件名。
+    上线后，另外两个文件的浏览器缓存也全部失效。这肯定不是我们想要的结果。
+    那么如何避免这个问题呢？
+    答案就是chunkhash！
+    chunkhash是根据具体模块文件的内容计算所得的hash值，
+    所以某个文件的改动只会影响它本身的hash指纹，不会影响其他文件。
+
+    处理css的问题,css修改[chunkhash]都会变
+    webpack默认将js/style文件统统编译到一个js文件中，可以借助extract-text-webpack-plugin将style文件单独编译输出。
+    从这点可以看出，webpack将style文件视为js的一部分。
+
+    这样的模式下有个很严重的问题，当我们希望将css单独编译输出并且打上hash指纹，
+    按照前文所述的使用chunkhash配置输出文件名时，编译的结果是js和css文件的hash指纹完全相同。
+    不论是单独修改了js代码还是style代码，编译输出的js/css文件都会打上全新的相同的hash指纹。
+    这种状况下我们无法有效的进行版本管理和部署
+
+    前文提到了使用extract-text-webpack-plugin单独编译输出css文件，造成上一节js/css共用hash指纹的配置为：
+    new ExtractTextPlugin('[name].[chunkhash].css');
+    extract-text-webpack-plugin提供了另外一种hash值：contenthash。顾名思义，
+    contenthash代表的是文本文件内容的hash值，也就是只有style文件的hash值。这个hash值就是解决上述问题的银弹。
+    修改配置如下：
+
+    new ExtractTextPlugin('[name].[contenthash].css');
+    编译输出的js和css文件将会有其独立的hash指纹。
+
+    编译输出的js和css文件将会有其独立的hash指纹。
+
+    到这里是不是就找到完美的解决方案了呢？
+
+    远远没有！
+
+    结合上文提到的种种，考虑一下这个问题：如果只修改了main.scss文件，未修改main.js文件，
+    那么编译输出的js文件的hash指纹会改变吗？
+
+    答案是肯定的。
+    webpack计算chunkhash时，以main.js文件为编译入口，整个chunk的内容会将main.scss的内容也计算在内。
+    怎么解决看源码?
+    webpack之所以如果流行的原因之一就是拥有庞大的社区和不计其数的开发者们，
+    实际上，我们遇到的问题已经有先驱者帮我们解决了。插件webpack-md5-hash便是上述伪代码的具体实现，
+    我们需要做的只是将这个插件加入到webpack的配置中：
+
+    var WebpackMd5Hash = require('webpack-md5-hash');
+
+    module.exports = {
+    output: {
+    //...
+    chunkFilename: "[chunkhash].chunk.js"
+    },
+    plugins: [
+    new WebpackMd5Hash()
+    ]
+    };
+
+    
+    http://www.cnblogs.com/ihardcoder/p/5623411.html
+
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+.hello{
+    color: red;
+}
+.fileLoader{
+    width: 100px;
+    height: 100px;
+    background:url("imgs/H5头像标志@3x.png");
+}
+.urlLoader{
+    width: 100px;
+    height: 100px;
+    background:url("imgs/1.jpg");
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+摇树的意思
+    有些代码是没有用的,比如写的函数没有用,css没有用,有些
+    变量没有用,我们想打包的时候把这些东西直接弄掉
+
+    所以treeshaking非常有必要的
+    js Tree Shaking
+    Css Tree Shaking
+    减少用户下载的时间
+
+    使用场景
+        常规优化
+        引入的第三方库的某一个功能(lodash)
+
+
+    /* harmony export (immutable) */ __webpack_exports__["a"] = a;
+    /* unused harmony export b */
+    /* unused harmony export c */
+    function a() {
+        return "this is a"
+    }
+    function b() {
+        return "this is b"
+    }
+    function c() {
+        return "this is c"
+    }
+
+    /***/ })
+    /******/ ]);
+    借助 Webpack.optimize.UglifyJsPlugin就可以把unused的代码去掉
+    打包后搜索 "this is
+
+    上面的是本地写代码的treeShaking,
+
+
+    场景二,我们使用第三方库怎么做到treeShaking
+Asset     Size  Chunks             Chunk Names
+main.bundle.js  73.7 kB       0  [emitted]  main
+[0] (webpack)/buildin/amd-options.js 82 bytes {0} [built]
+[1] ./src/index.js 154 bytes {0} [built]
+[2] ./src/test.js 249 bytes {0} [built]
+[4] (webpack)/buildin/global.js 823 bytes {0} [built]
+[5] (webpack)/buildin/module.js 521 bytes {0} [built]
++ 1 hidden module
+
+并没有压缩?为什么?
+    lodash是一个一万多行的代码,不支持分块引入的方法
+
+    那我们先安装 cnpm i lodash-es --save-dev 还是不行(这是处理问题的思路)
+
+    cnpm i babel-plugin-lodash --save-dev
+    在babel那里配置一下,打包下来
+    F:\webpack练习课\treeShaking>npm start
+
+    > demo1@1.0.0 start F:\webpack练习课\treeShaking
+    > webpack --config webpack.config.js
+
+    Hash: 6df1dc59b1cb929bd1d5
+    Version: webpack 3.11.0
+    Time: 1586ms
+    Asset     Size  Chunks             Chunk Names
+    main.bundle.js  8.18 kB       0  [emitted]  main
+    [3] ./src/index.js 310 bytes {0} [built]
+    [12] (webpack)/buildin/global.js 823 bytes {0} [built]
+    [22] ./src/test.js 249 bytes {0} [built]
+    + 20 hidden modules
+
+    F:\webpack练习课\treeShaking>
+
+
+    8kb完成了
+
+    css-treeShaking
+    Purify CSS
+    purifycss-webpack
+    cnpm i purifycss-webpack
+    cnpm i glob-all
+    注意purifycss放在extracttextplugin的后面
+
+
+
+</body>
+</html>
