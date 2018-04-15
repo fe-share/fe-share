@@ -1,0 +1,16 @@
+html {
+  background-color: red;
+}
+
+.bigbox {
+  height: 100px;
+  width: 100px;
+  border-radius: 50px;
+  background-color: beige;
+}
+
+.largeBox {
+  width: 500px;
+  height: 500px;
+  background-color: yellow;
+}

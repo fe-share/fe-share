@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+    1.webpack打包的分析
+        offical Analyse Tool
+        require("webpack-bundle-analyzer").BundleAnalyzerPlugin 在webpack配置文件初始化就行了
+        bundleAnalyzerPlugin  vue-cli 可视化的
+
+       打包的命令行信息
+        chuns 0 1 2 3代表 chunk id 唯一的,顺序可能随着代码的不通会变化
+        会看到hiddenmodule
+        执行 webpack --display-modules
+        就会看到[0] [1] [2] [3] 模块的id 引用顺序变化这个id也会变化
+
+        优化打包的速度
+            办法一
+                分开vendor和app 也就是分开业务逻辑和第三方,每次都会打包第三方代码
+                    借助第三方插件,不再打包第三方库代码
+                Dllplugin  生成map映射,不再打包第三方代码
+                DllreferencePlugin
+            办法二
+                UglifyJsPlugin 平行处理 插件
+                    parallel:true 31位线程处理
+                    cache:true
+            办法三
+                    HappyPack
+                    loader处理串行变成并行
+            办法四
+                    babel-loader耗时,
+                    include
+                    exclude
+
+            其他的
+                减少resolve
+                Devtool:去掉sourcemap
+                cache-loader
+                升级node
+                升级webpack
+
+
+            长缓存
+                一直没有解决这个问题
+            什么是长缓存优化?
+                填写一个url到请求一个网页,用户浏览器到服务器下载请求,服务器告诉浏览器摹写东西是没发生变化
+                不需要下载,直接去缓存里面去拿
+            我们想打到的效果是什么呢?
+                以前没变的代码重缓存里面拿,更新的代码重新下载
+            怎么做/?
+
+
+            场景
+
+               改变 业务代码    vendor的代码改变
+                我们的第一个需求就是我们修改业务代码, 不改变vendor代码
+                解决:
+                    提取vendor
+                    hash -> chunkhash
+                    提取webpack runtime
+                我们entry:{
+                        main:"./src/foo",
+                        vendor:["react"]
+                    }
+                plugins:[
+                    new webpack.optimize.ComminsChunkPlugin({
+                            name:"vendor"
+                        })
+                    ]
+                我们现在会得到两个打包的文件 main.13dsds.js vendor.2122es.js
+                我们现在修改我们的业务代码
+                但是我们发现我们的vendor打包的hash值变了,说明我们还有事情没做,
+                我们没有花webpack
+                plugins:[
+                        new webpack.optimize.ComminsChunkPlugin({
+                                name:"vendor"
+                        })
+                        new webpack.optimize.ComminsChunkPlugin({
+                                name:"runtime" 找一个没有起的名字
+                        })
+                ]
+
+            下一个场景
+                引入新的模块,模块顺序变化,vendor hash变化
+                vendor打包的hash值又变了?
+                原因:每个模块每一个chunk都有id,id值变化的,也会导致打包的hash值发生变化?
+                怎么解决?
+                NamedChunksPlugin或者NamedModulesPlugin,模块和chunks id会变的,但是我们让chunks或者module是名字的
+                情况下,能解决这个问题
+                new NamedChunksPlugin()  new NamedModulesPlugin()
+                其实模块的引入顺序也会影响
+
+            下一个场景
+                动态引入模块,模块的顺序变化,vendor hash变化
+                其实webpack已经解决这个问题了,异步引入模块,导致vendor打包的hash值发生变化
+                现在的版本不再存在这个问题(可以升级webpack的版本解决)
+                异步引入模块 import("./async").then(function(a){console.log(a)})
+                另外一种解决方案,定义动态模块的模块名
+                import(/*webpackchunkName: 'async'*/)
+
+
+                总结:长缓存
+                    1完全独立打包vendor(第三方库和业务代码分离)
+                    2抽出mainfest (webpack runtime)webpack打包的时候runtime的代码会变化,所以我们抽出mainfest
+                    才能不影响vendor(因为runtime里面方的是wbepack打包的逻辑)
+                    3.使用NamedChunksPlugin
+                    4.使用NamedModulePlugin
+                    5.动态模块给丁模块名称import(/*webpackchunkName: 'async'*/).then()
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+        多页面应用
+            多入口
+            多个html,借助HtmlWebpackPLugin
+            每个页面有不通的chunk
+            每个页面不通的参数
+        多页面多配置
+            多配置
+            webpack3.1.0
+            paraller-webpack多线程并行打包(使用他可以打包速度提升)
+            配置灵活
+
+            缺点 因为每个配置都是独立的,不能把相同的代码提取出来,最大的不好,不能呢个把共享代码提取出来,个页面间的缓存
+            就不能再用,
+
+            单配置
+                可以共享各个entry之间公共代码
+            缺点
+                打包速度慢
+                输出的内容比较复杂
+            new webpack.optimize.CommonsChunkPlugin({name:"react",minChunks:Infinity})
+            minChunks:Infinity只会打包react,不会打其他的了
+</body>
+</html>

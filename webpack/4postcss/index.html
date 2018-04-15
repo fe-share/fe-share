@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+我们来配置css的前缀以便于兼容各个浏览器,使才css兼容,自己写太麻烦了啊
+怎么做做呢?
+在rules里面这么写
+            use: [
+                { loader: 'style-loader', options: { sourceMap: true } },
+                { loader: 'css-loader', options: { sourceMap: true } },
+                    { loader: 'postcss-loader', options: { sourceMap:  'inline',
+                        plugins: [
+                        require('autoprefixer')()
+                        ]
+                        } },
+                    { loader: 'less-loader', options: { sourceMap: true } } ]
+
+            另外一种写法就是
+            postcss.config.js文件
+            module.exports = ({ file, options, env }) => ({
+            parser: file.extname === '.sss' ? 'sugarss' : false,
+            plugins: {
+            'postcss-import': { root: file.dirname },
+            'postcss-cssnext': options.cssnext ? options.cssnext : false,
+            'autoprefixer': env == 'production' ? options.autoprefixer : false,
+            'cssnano': env === 'production' ? options.cssnano : false
+            }
+            })
+            另外加上sourceMap:true,提高性能,前面如果有sourcemap就不新建sourceMap了
+
+
+            而且require("autoprefixer")({broswer: 'last 5 versions'})
+            可以设置配置项,设置任何配置项的方法都一样的
+</body>
+</html>

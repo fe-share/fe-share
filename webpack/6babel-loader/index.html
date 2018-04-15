@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>babel-loader</title>
+</head>
+<body>
+
+
+    1.我们的讲的核心,js的转义
+    让可以使用es6,es7,es8的语法,可以使用jsx,可以使用ts,可以使用coffeescript,
+    所以我想要使用新的东西,我们就需要webpack替我们转义(所以比较重要)
+
+    那怎么配置
+    1.安装babel-loader 依赖babel-core
+    2.不仅需要loader,还需要对应的插件babel-preset-env(es6,es7,es8都支持)
+    3.新建.babelrc文件
+          babel-presets
+            es-2015
+            es-2016
+            es-2017
+            env  包括es2015 es2016  es2017
+            babel-preset-react
+            babel-preset-stage 0-3还没真是发布的
+
+            npm install @bable/preset-env --save-dev 安装最新的
+            npm install babel-preset-env --save-dev 安装普通的
+
+            babel Presets 还有targets属性,
+            targets
+            targets.browsers
+            targets.browsers:"last 2 versions"
+            targets.browsers:"> 1%"
+                配置targets
+                    {
+                    "presets":["babel-preset-env",targets:{
+                                browser:[">1%","last 2 versions"] babel转义到什么程度
+                        }]
+                    }
+
+    babel官网上写了很明确一句话，babel只负责对语法进行编译。当我们写尖头函数，babel会帮你把它编译成普通函数，
+    这没有任何问题，但是，比如说我们代码里使用了promise，babel打包出来的代码其实还是promise，在低版本浏览器里，
+    promise并不支持，但是babel并不会帮你处理，因为这不是语法编译层面需要做的事情。不转换新的API包括，
+    比如Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise等全局对象。
+
+    于是，如果我们要让打包出来的代码能兼容低版本浏览器，还要考虑到promise，Set这样的新语法低版本浏览器不兼容的问题，
+    这时候babel-polyfill就出场了。你只需要全局安装一下babel-polyfill(全局垫片)：import ("babel-polyfill")
+        Map
+        Set
+        Generrator
+        Array.from
+        Array.prototype.includes
+                {
+                "presets":[
+                "env"],
+                "plugins":[
+                "transform-vue-jsx",
+                "transform-runtime"
+                ]
+                }
+    4.或者在loader
+                use:[
+                {
+                loader:'babel-loader',
+                options:{
+                presets:["env"],
+                plugins:[
+                "transform-vue-jsx",
+                'transform-runtime'
+                ]
+                }
+                }
+                ]
+    5.babel-loader 很慢！
+    确保转译尽可能少的文件。你可能使用 /\.js$/ 来匹配，这样也许会去转译 node_modules 目录或者其他不需要的源代码。
+    要排除 node_modules，参考文档中的 loaders 配置的 exclude 选项。
+    你也可以通过使用 cacheDirectory 选项，将 babel-loader 提速至少两倍。 这会将转译的结果缓存到文件系统中。
+
+    6.babel 在每个文件都插入了辅助代码，使代码体积过大！
+    npm install babel-plugin-transform-runtime --save-dev
+
+    7 ts
+     npm install typescript  ts-loader --save-dev
+    tsconfig.json
+    {
+        "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "allowJs": true
+        },
+        "include": ["./src/*"],
+        "exclude": ["./node_modules"]
+    }
+
+    ts里面包含js,js的超集,微软,angular
+    那么我们就可以想使用什么语法使用什么语法了,
+    ts的错误提示
+        ts传错参数提示
+        npm install @type/lodash
+        npm install @type/vue
+
+    Cannot find module 'yargs'这种报错就是npm包安装的问题,漏掉了包
+</body>
+</html>
