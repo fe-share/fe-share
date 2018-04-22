@@ -38,7 +38,7 @@ JS 中任务执行过程如下：
 
 ![EventLoop](./img/event_loop.png)
 
-主线程  运行时产生堆(heap)和栈(stack)，栈中代码会调用各种 WebAPI(DOM 操作，Ajax 请求，计时器)，而后在其完成时将其注入任务队列中。一旦主线程任务执行完毕，就会从任务队列中依次取出任务并执行其  回调函数。
+主线程运行时产生堆(heap)和栈(stack)，栈中代码会调用各种 WebAPI(DOM 操作，Ajax 请求，计时器)，而后在其完成时将其注入任务队列中。一旦主线程任务执行完毕，就会从任务队列中依次取出任务并执行其回调函数。
 
 ```javascript
 console.log('script start')
@@ -57,13 +57,13 @@ console.log('script end')
 其具体过程如下
 
 1.  打印 script start
-2.  将计时器任务添加到计时器线程进行计时， 完成后将其添加到任务队列中
+2.  将计时器任务添加到计时器线程进行计时，完成后将其添加到任务队列中
 3.  打印 script end
 4.  主线程任务执行完毕，从任务队列中拉取任务，执行回调，打印 timeout
 
 ## setTimeout 和 setInterval
 
-setTimeout 和 setInterval 本质上都是先将任务提交给计时器线程计时，而后计时  结束后将任务添加到任务队列中。
+setTimeout 和 setInterval 本质上都是先将任务提交给计时器线程计时，而后计时结束后将任务添加到任务队列中。
 
 因此，其实具体的执行时间取决于主线程任务的执行时间。
 
@@ -74,7 +74,7 @@ setTimeout(function() {
 // something costs 10s
 ```
 
-正常期待是 1 秒后执行打印 timeout，但是  由于主线程任务花费了 10 秒，所以实际打印会在 10 秒之后。
+正常期待是 1 秒后执行打印 timeout，但是由于主线程任务花费了 10 秒，所以实际打印会在 10 秒之后。
 
 因此`setInterval`会出现一个任务跳过的问题。
 
